@@ -209,7 +209,7 @@ jasper.prototype.pdf = function(report) {
  */
 
 var validConnections = {};
-jasper.prototype.export = function(report, type) {
+jasper.prototype.export = function(report, type, callback) {
 
 	var self = this;
 
@@ -267,7 +267,7 @@ jasper.prototype.export = function(report, type) {
 				conn.driver = self.drivers[conn.driver];
 			}
 			var connStr = conn.jdbc?conn.jdbc:'jdbc:'+conn.driver.type+'://'+conn.host+':'+conn.port+'/'+conn.dbname;
-			
+
 			if(!validConnections[connStr] || !validConnections[connStr].isValidSync(conn.validationTimeout || 1)){
 				validConnections[connStr] = self.dm.getConnectionSync(connStr, conn.user, conn.pass);
 			}
@@ -311,8 +311,19 @@ jasper.prototype.export = function(report, type) {
 			}
 
 			var conn = processConn(item.conn, item);
-			var p = self.jfm.fillReportSync(path.resolve(self.parentPath,item.jasper), data, conn);
-			prints.push(p);
+
+			if(callback){
+				self.jfm.fillReport(path.resolve(self.parentPath,item.jasper), data, conn, function(err,master) {
+					var tempName = temp.path({suffix: '.pdf'});
+					self.jem['exportReportTo'+type+'FileSync'](master, tempName);
+					var exp = fs.readFileSync(tempName);
+					fs.unlinkSync(tempName);
+					callback(exp);
+				});
+			}else{
+				var p = self.jfm.fillReportSync(path.resolve(self.parentPath,item.jasper), data, conn);
+				prints.push(p);
+			}
 		}
 	});
 	if(prints.length) {
