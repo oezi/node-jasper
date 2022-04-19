@@ -314,11 +314,19 @@ jasper.prototype.export = function(report, type, callback) {
 
 			if(callback){
 				self.jfm.fillReport(path.resolve(self.parentPath,item.jasper), data, conn, function(err,master) {
-					var tempName = temp.path({suffix: '.pdf'});
-					self.jem['exportReportTo'+type+'FileSync'](master, tempName);
-					var exp = fs.readFileSync(tempName);
-					fs.unlinkSync(tempName);
-					callback(exp);
+					if(err){
+						console.log('ERROR in fillReport: err ->', err, 'result ->', master);
+						callback(null, err);
+					}else if(!master){
+						console.log('ERROR in fillReport: no result ->', master);
+						callback(null, null);
+					}else{
+						var tempName = temp.path({suffix: '.pdf'});
+						self.jem['exportReportTo'+type+'FileSync'](master, tempName);
+						var exp = fs.readFileSync(tempName);
+						fs.unlinkSync(tempName);
+						callback(exp);
+					}
 				});
 			}else{
 				var p = self.jfm.fillReportSync(path.resolve(self.parentPath,item.jasper), data, conn);
