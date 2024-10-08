@@ -1,6 +1,5 @@
 # node-jasper
 
-a simple weapon for using
 JasperReports within Node.js
 
 ## Install
