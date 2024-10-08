@@ -311,9 +311,12 @@ jasper.prototype.export = function(report, type, callback) {
 			}
 
 			var conn = processConn(item.conn, item);
+			var pathToRpt = path.resolve(self.parentPath,item.jasper);
+
+			console.log(new Date(), `Filling report ${pathToRpt} with data ${data}`);
 
 			if(callback){
-				self.jfm.fillReport(path.resolve(self.parentPath,item.jasper), data, conn, function(err,master) {
+				self.jfm.fillReport(pathToRpt, data, conn, function(err,master) {
 					if(err){
 						console.log('ERROR in fillReport: err ->', err, 'result ->', master);
 						callback(null, err);
@@ -329,7 +332,7 @@ jasper.prototype.export = function(report, type, callback) {
 					}
 				});
 			}else{
-				var p = self.jfm.fillReportSync(path.resolve(self.parentPath,item.jasper), data, conn);
+				var p = self.jfm.fillReportSync(pathToRpt, data, conn);
 				prints.push(p);
 			}
 		}
